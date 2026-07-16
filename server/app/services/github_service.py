@@ -1,5 +1,5 @@
 import os
-
+import time
 from dotenv import load_dotenv
 from github import Github
 
@@ -10,8 +10,9 @@ github = Github(os.getenv("GITHUB_TOKEN"))
 
 def get_user(username: str):
     try:
+        start = time.time()
         user = github.get_user(username)
-
+        print(f"get_user took {time.time() - start:.2f}s")
         return {
             "name": user.name,
             "username": user.login,
@@ -22,6 +23,7 @@ def get_user(username: str):
             "public_repos": user.public_repos,
             "profile_url": user.html_url,
         }
+        
 
     except Exception:
         return None
@@ -29,6 +31,7 @@ def get_user(username: str):
 
 def get_user_repositories(username: str):
     try:
+        start = time.time()
         user = github.get_user(username)
 
         repos = []
@@ -44,6 +47,7 @@ def get_user_repositories(username: str):
                     "url": repo.html_url,
                 }
             )
+        print(f"get_user_repositories took {time.time() - start:.2f}s")
 
         return repos
 

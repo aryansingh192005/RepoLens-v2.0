@@ -1,4 +1,5 @@
 import os
+from collections import deque
 
 from dotenv import load_dotenv
 from github import Github
@@ -9,7 +10,6 @@ load_dotenv()
 
 github = Github(os.getenv("GITHUB_TOKEN"))
 
-# Files that give the AI the highest value
 PRIORITY_FILES = {
     "README.md",
     "package.json",
@@ -19,46 +19,121 @@ PRIORITY_FILES = {
     "docker-compose.yml",
 }
 
+IMPORTANT_DIRS = {
+    "app",
+    "src",
+    "server",
+    "client",
+    "backend",
+    "frontend",
+}
+
+IGNORE_DIRS = {
+    ".git",
+    ".github",
+    ".vscode",
+    ".idea",
+    "docs",
+    "tests",
+    "test",
+    "__pycache__",
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    ".next",
+    ".venv",
+    "venv",
+    "env",
+}
+
 
 def get_repository_files(owner: str, repo_name: str, max_files: int = 30):
     """
-    Fetch only the most valuable repository files.
-    This keeps AI analysis fast.
+    Fast repository traversal.
+
+    Only explores useful folders and returns at most max_files.
     """
 
     repo = github.get_repo(f"{owner}/{repo_name}")
 
-    queue = repo.get_contents("")
     selected = []
+
+    try:
+        root_items = repo.get_contents("")
+    except Exception:
+        return selected
+
+    queue = deque()
+
+    # -------------------------
+    # Scan root only
+    # -------------------------
+
+    for item in root_items:
+
+        if item.type == "file":
+
+            filename = item.path.split("/")[-1]
+
+            if (
+                filename in PRIORITY_FILES
+                and should_include(item.path)
+            ):
+                selected.append(
+                    {
+                        "path": item.path,
+                        "type": "file",
+                        "download_url": item.download_url,
+                        "priority": True,
+                    }
+                )
+
+        elif item.type == "dir":
+
+            folder = item.path.split("/")[-1]
+
+            if folder in IMPORTANT_DIRS:
+                queue.append(item.path)
+
+    # -------------------------
+    # Explore only important folders
+    # -------------------------
 
     while queue and len(selected) < max_files:
 
-        item = queue.pop(0)
+        current = queue.popleft()
 
-        if item.type == "dir":
-            try:
-                queue.extend(repo.get_contents(item.path))
-            except Exception:
-                pass
+        try:
+            contents = repo.get_contents(current)
+        except Exception:
             continue
 
-        if not should_include(item.path):
-            continue
+        for item in contents:
 
-        filename = item.path.split("/")[-1]
+            if len(selected) >= max_files:
+                break
 
-        priority = filename in PRIORITY_FILES
+            if item.type == "dir":
 
-        selected.append(
-            {
-                "path": item.path,
-                "type": item.type,
-                "download_url": item.download_url,
-                "priority": priority,
-            }
-        )
+                folder = item.path.split("/")[-1]
 
-    # Priority files first
-    selected.sort(key=lambda x: not x["priority"])
+                if folder in IGNORE_DIRS:
+                    continue
+
+                queue.append(item.path)
+                continue
+
+            if not should_include(item.path):
+                continue
+
+            selected.append(
+                {
+                    "path": item.path,
+                    "type": "file",
+                    "download_url": item.download_url,
+                    "priority": False,
+                }
+            )
 
     return selected[:max_files]

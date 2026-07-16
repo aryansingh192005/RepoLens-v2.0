@@ -147,6 +147,8 @@ def github_good_first_issues(username: str):
     return recommendations
 
 
+import traceback
+
 @app.get("/api/repository/{owner}/{repository}")
 def repository_analysis(owner: str, repository: str):
     try:
@@ -156,6 +158,8 @@ def repository_analysis(owner: str, repository: str):
         )
 
     except Exception as e:
+        traceback.print_exc()
+
         raise HTTPException(
             status_code=500,
             detail=str(e),

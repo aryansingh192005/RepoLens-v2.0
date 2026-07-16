@@ -1,3 +1,4 @@
+import time
 import os
 import json
 from collections import Counter
@@ -13,6 +14,7 @@ client = genai.Client(
 
 
 def analyze_repositories(repositories):
+    start = time.time()
     languages = Counter()
 
     total_stars = 0
@@ -35,7 +37,7 @@ def analyze_repositories(repositories):
         level = "Advanced"
     elif len(repositories) >= 5:
         level = "Intermediate"
-
+    print(f"analyze_repositories took {time.time()-start:.2f}s")
     return {
         "level": level,
         "top_languages": top_languages,
@@ -107,7 +109,7 @@ Return exactly this structure:
     ]
 }}
 """
-
+    start = time.time()
     response = client.models.generate_content(
         model="gemini-3.5-flash",
         contents=prompt,
@@ -120,5 +122,5 @@ Return exactly this structure:
 
     if text.endswith("```"):
         text = text[:-3]
-
+    print(f"generate_ai_analysis took {time.time()-start:.2f}s")
     return json.loads(text.strip())
