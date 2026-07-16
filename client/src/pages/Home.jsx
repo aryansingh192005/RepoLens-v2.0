@@ -1,7 +1,12 @@
+import MainLayout from "@/components/layout/MainLayout";
+import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-      <h1 className="text-5xl font-bold">Home</h1>
-    </div>
+    <MainLayout>
+      <Hero />
+      <Features />
+    </MainLayout>
   );
 }
