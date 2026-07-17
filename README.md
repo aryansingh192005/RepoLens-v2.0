@@ -224,7 +224,7 @@ B.Tech Computer Science & Engineering
 
 GitHub: https://github.com/aryansingh192005
 
-LinkedIn: *(Add your LinkedIn URL here)*
+LinkedIn: https://www.linkedin.com/in/aryansingh192005
 
 ---
 
