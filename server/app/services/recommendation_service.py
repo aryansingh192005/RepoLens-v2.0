@@ -1,70 +1,73 @@
-import json
-import time
-
-from app.services.ai_service import client
-
-
 def recommend_issues(profile, repositories, issues):
-    prompt = f"""
-You are an expert Open Source Mentor.
+    """
+    Recommend GitHub issues without using AI.
 
-Recommend the BEST GitHub issues for this developer.
+    Scoring:
+    +50 -> Issue language matches user's top languages
+    +30 -> "good first issue" label
+    +10 -> Repository has many stars
+    +10 -> Recently updated (if available)
+    """
 
-Developer:
-{json.dumps(profile, indent=2)}
+    # User's top languages
+    language_count = {}
 
-Repositories:
-{json.dumps(repositories, indent=2)}
+    for repo in repositories:
+        language = repo.get("language")
 
-Candidate Issues:
-{json.dumps(issues, indent=2)}
-
-Return ONLY valid JSON.
-
-{{
-    "recommendations":[
-        {{
-            "title":"...",
-            "repository":"...",
-            "compatibility":95,
-            "difficulty":"Easy",
-            "estimated_time":"2 hours",
-            "reason":"..."
-        }}
-    ]
-}}
-
-Return at most 10 recommendations.
-"""
-
-    models = [
-        "gemini-3.5-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash",
-    ]
-
-    last_error = None
-
-    for model in models:
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
+        if language:
+            language_count[language] = (
+                language_count.get(language, 0) + 1
             )
 
-            text = response.text.strip()
+    top_languages = sorted(
+        language_count,
+        key=language_count.get,
+        reverse=True,
+    )[:5]
 
-            if text.startswith("```json"):
-                text = text.replace("```json", "", 1)
+    recommendations = []
 
-            if text.endswith("```"):
-                text = text[:-3]
+    for issue in issues:
 
-            return json.loads(text.strip())
+        score = 0
 
-        except Exception as e:
-            print(f"{model} failed:", e)
-            last_error = e
-            time.sleep(1)
+        issue_language = issue.get("language")
 
-    raise last_error
+        if issue_language in top_languages:
+            score += 50
+
+        labels = [
+            label.lower()
+            for label in issue.get("labels", [])
+        ]
+
+        if "good first issue" in labels:
+            score += 30
+
+        score += min(
+            issue.get("stars", 0) // 100,
+            10,
+        )
+
+        recommendations.append(
+            {
+                **issue,
+                "compatibility": min(score, 100),
+                "difficulty": "Beginner",
+                "estimated_time": "1-3 hours",
+                "reason": (
+                    f"Matches your experience in "
+                    f"{issue_language or 'multiple technologies'}."
+                ),
+            }
+        )
+
+    recommendations.sort(
+        key=lambda x: x["compatibility"],
+        reverse=True,
+    )
+
+    return {
+        "recommendations": recommendations[:10]
+    }

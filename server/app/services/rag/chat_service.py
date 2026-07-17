@@ -27,9 +27,20 @@ Rules:
 - Use markdown when helpful.
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.5-flash",
-        contents=prompt,
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt,
+        )
 
-    return response.text
+        return response.text
+
+    except Exception as e:
+        print("Repository Chat Error:", e)
+
+        return (
+            "⚠️ Repository chat is temporarily unavailable. "
+            "This is likely due to the Gemini API quota being exhausted "
+            "or the service being temporarily unavailable. "
+            "Please try again later."
+        )

@@ -29,7 +29,7 @@ from app.services.rag.chat_service import (
 )
 
 
-app = FastAPI(title="AI Open Source Mentor")
+app = FastAPI(title="RepoLens API")
 
 
 app.add_middleware(
@@ -52,7 +52,7 @@ class RepositoryChatRequest(BaseModel):
 @app.get("/")
 def root():
     return {
-        "message": "AI Open Source Mentor API is running 🚀"
+        "message": "RepoLens API is running 🚀"
     }
 
 
@@ -113,12 +113,31 @@ def github_ai_analysis(username: str):
             detail="GitHub user not found",
         )
 
-    return {
-        "analysis": generate_ai_analysis(
+    try:
+        analysis = generate_ai_analysis(
             profile,
             repositories,
         )
-    }
+
+        return {
+            "analysis": analysis,
+            "ai_available": True,
+        }
+
+    except Exception as e:
+        print("Gemini failed:", e)
+
+        return {
+            "analysis": {
+                "summary": "AI analysis is temporarily unavailable because the Gemini service is busy. GitHub data is still available.",
+                "strengths": [],
+                "weaknesses": [],
+                "recommended_technologies": [],
+                "recommended_repositories": [],
+                "roadmap": [],
+            },
+            "ai_available": False,
+        }
 
 
 @app.get("/api/github/{username}/good-first-issues")
@@ -174,12 +193,67 @@ def repository_chat(request: RepositoryChatRequest):
             request.repository_summary,
         )
 
-        return {
-            "answer": answer,
-        }
+        return {"answer": answer}
 
     except Exception as e:
+        print(e)
+
         raise HTTPException(
-            status_code=500,
-            detail=str(e),
+            status_code=503,
+            detail="Repository chat is temporarily unavailable.",
         )
+
+@app.get("/api/github/{username}/dashboard")
+def github_dashboard(username: str):
+    profile = get_user(username)
+    repositories = get_user_repositories(username)
+
+    if profile is None or repositories is None:
+        raise HTTPException(
+            status_code=404,
+            detail="GitHub user not found",
+        )
+
+    # Fast local analysis
+    repo_analysis = analyze_repositories(repositories)
+
+    # AI analysis with graceful fallback
+    try:
+        ai_analysis = generate_ai_analysis(
+            profile,
+            repositories,
+        )
+        ai_available = True
+
+    except Exception as e:
+        print("Gemini failed:", e)
+
+        ai_available = False
+
+        ai_analysis = {
+            "summary": "AI analysis is temporarily unavailable. GitHub statistics are still available.",
+            "strengths": [],
+            "weaknesses": [],
+            "recommended_technologies": [],
+            "recommended_repositories": [],
+            "roadmap": [],
+        }
+
+    # Issue recommendations
+    issues = get_good_first_issues(
+        repo_analysis["top_languages"]
+    )
+
+    recommendations = recommend_issues(
+        profile,
+        repositories,
+        issues,
+    )
+
+    return {
+        "user": profile,
+        "repository_analysis": repo_analysis,
+        "analysis": ai_analysis,
+        "issues": recommendations,
+        "ai_available": ai_available,
+    }

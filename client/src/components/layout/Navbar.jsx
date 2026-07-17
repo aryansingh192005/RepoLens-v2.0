@@ -8,7 +8,7 @@ export default function Navbar() {
           to="/"
           className="text-xl font-bold tracking-tight text-white"
         >
-          AI Open Source Mentor
+        RepoLens
         </Link>
 
         <div className="flex items-center gap-6">

@@ -48,68 +48,60 @@ def analyze_repositories(repositories):
 
 
 def generate_ai_analysis(profile, repositories):
-    prompt = f"""
-You are an expert Open Source Mentor.
+    start = time.time()
 
-Analyze this GitHub profile.
+    # Keep only the most valuable repositories
+    top_repositories = sorted(
+        repositories,
+        key=lambda repo: repo.get("stars", 0),
+        reverse=True,
+    )[:8]
+
+    repository_summary = []
+
+    for repo in top_repositories:
+        repository_summary.append({
+            "name": repo.get("name"),
+            "language": repo.get("language"),
+            "stars": repo.get("stars"),
+            "forks": repo.get("forks"),
+            "description": repo.get("description"),
+        })
+
+    stats = analyze_repositories(repositories)
+
+    prompt = f"""
+You are an expert GitHub mentor.
+
+Analyze this developer.
 
 Profile:
-{json.dumps(profile, indent=2)}
+Name: {profile.get("name")}
+Username: {profile.get("username")}
+Bio: {profile.get("bio")}
+Followers: {profile.get("followers")}
+Public Repositories: {profile.get("public_repos")}
 
-Repositories:
-{json.dumps(repositories, indent=2)}
+Repository Statistics:
+{json.dumps(stats, indent=2)}
 
-IMPORTANT:
+Top Repositories:
+{json.dumps(repository_summary, indent=2)}
 
 Return ONLY valid JSON.
 
-Do NOT wrap it in markdown.
-Do NOT use ```json.
-Do NOT explain anything.
-
-Return exactly this structure:
+Use this structure exactly:
 
 {{
-    "summary": "...",
-    "strengths": [
-        "...",
-        "..."
-    ],
-    "weaknesses": [
-        "...",
-        "..."
-    ],
-    "recommended_technologies": [
-        "...",
-        "..."
-    ],
-    "recommended_repositories": [
-        {{
-            "name":"...",
-            "reason":"..."
-        }}
-    ],
-    "roadmap":[
-        {{
-            "week":1,
-            "goal":"..."
-        }},
-        {{
-            "week":2,
-            "goal":"..."
-        }},
-        {{
-            "week":3,
-            "goal":"..."
-        }},
-        {{
-            "week":4,
-            "goal":"..."
-        }}
-    ]
+    "summary": "",
+    "strengths": [],
+    "weaknesses": [],
+    "recommended_technologies": [],
+    "recommended_repositories": [],
+    "roadmap": []
 }}
 """
-    start = time.time()
+
     response = client.models.generate_content(
         model="gemini-3.5-flash",
         contents=prompt,
@@ -122,5 +114,7 @@ Return exactly this structure:
 
     if text.endswith("```"):
         text = text[:-3]
+
     print(f"generate_ai_analysis took {time.time()-start:.2f}s")
+
     return json.loads(text.strip())

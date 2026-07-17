@@ -6,11 +6,11 @@ export default function Topbar() {
 
       <div>
         <h1 className="text-2xl font-bold text-white">
-          AI Open Source Mentor
+          RepoLens
         </h1>
 
-        <p className="text-sm text-slate-400">
-          Build your open source journey with AI.
+        <p className="mt-1 text-sm text-slate-400">
+          AI-powered GitHub Developer Intelligence
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export default function Topbar() {
 
         </div>
 
-        <button className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-medium text-white transition hover:bg-violet-500">
+        <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 font-medium text-white transition hover:scale-[1.02]">
 
           <Sparkles size={18} />
 

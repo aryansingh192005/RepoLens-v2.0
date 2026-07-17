@@ -1,54 +1,80 @@
 import { Card } from "@/components/ui/card";
+import {
+  Brain,
+  FolderGit2,
+  GitBranch,
+  MessageSquare,
+} from "lucide-react";
 
 const features = [
   {
-    title: "AI Repository Matching",
+    icon: <Brain size={28} />,
+    title: "AI Developer Analysis",
     description:
-      "Find open source repositories that match your skills and experience.",
+      "Generate detailed insights into any GitHub developer's strengths, growth areas, and learning roadmap.",
   },
   {
-    title: "Issue Explanation",
+    icon: <FolderGit2 size={28} />,
+    title: "Repository Intelligence",
     description:
-      "Understand complex GitHub issues in simple, beginner-friendly language.",
+      "Understand project structure, architecture, and technologies with AI-powered repository analysis.",
   },
   {
-    title: "Contribution Roadmap",
+    icon: <FolderGit2 size={28} />,
+    title: "Open Source Discovery",
     description:
-      "Receive a personalized roadmap to become an active open source contributor.",
+      "Discover repositories and beginner-friendly issues tailored to your experience.",
   },
   {
-    title: "PR Review",
+    icon: <MessageSquare size={28} />,
+    title: "Repository Chat",
     description:
-      "Get AI feedback on your pull requests before submitting them.",
+      "Ask questions about any repository and receive AI-generated explanations instantly.",
   },
 ];
 
 export default function Features() {
   return (
-    <section className="px-6 py-20">
+    <section className="px-6 py-24">
       <div className="mx-auto max-w-7xl">
-        <h2 className="text-center text-4xl font-bold">
-          Everything You Need
-        </h2>
 
-        <p className="mt-4 text-center text-slate-400">
-          Learn, contribute, and grow with AI assistance.
-        </p>
+        <div className="text-center">
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <h2 className="text-4xl font-bold text-white">
+            Everything you need to explore GitHub
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-400">
+            RepoLens combines GitHub APIs and AI to help developers learn,
+            analyze, and contribute with confidence.
+          </p>
+
+        </div>
+
+        <div className="mt-16 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+
           {features.map((feature) => (
             <Card
               key={feature.title}
-              className="border-slate-800 bg-slate-900 p-6"
+              className="group rounded-3xl border border-slate-800 bg-slate-900 p-8 transition-all duration-300 hover:-translate-y-2 hover:border-blue-500/40"
             >
-              <h3 className="text-xl font-semibold">{feature.title}</h3>
+              <div className="mb-6 text-blue-400">
+                {feature.icon}
+              </div>
 
-              <p className="mt-3 text-slate-400">
+              <h3 className="text-xl font-semibold text-white">
+                {feature.title}
+              </h3>
+
+              <p className="mt-4 leading-7 text-slate-400">
                 {feature.description}
               </p>
+
             </Card>
           ))}
+
         </div>
+
       </div>
     </section>
   );
