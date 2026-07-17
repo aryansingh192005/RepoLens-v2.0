@@ -1,5 +1,11 @@
 # 🚀 RepoLens v2.0
 
+## 🌐 Live Demo
+
+**Application:** https://repo-lens-v2-0.vercel.app
+
+**Backend API:** https://repolens-backend-77e8.onrender.com
+
 > **AI-Powered GitHub Developer Intelligence Platform**
 
 RepoLens is a full-stack AI application that analyzes GitHub developers and repositories using GitHub APIs and Google Gemini AI. It helps developers understand coding strengths, discover learning opportunities, explore repositories, and find beginner-friendly open-source contributions.
@@ -42,6 +48,8 @@ RepoLens is a full-stack AI application that analyzes GitHub developers and repo
 ---
 
 # 🛠 Tech Stack
+
+React • FastAPI • Python • Gemini AI • GitHub API • Tailwind CSS • Vercel • Render
 
 ## Frontend
 
